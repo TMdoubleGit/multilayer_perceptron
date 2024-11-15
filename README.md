@@ -2,8 +2,95 @@
 
 42Paris Machine Learning project
 
-About:
-    This project is an introduction to artificial neural networks, with the implementation of a multilayer perceptron
+A Python implementation of a Multilayer Perceptron (MLP) for solving classification and regression problems. This project provides a flexible and easy-to-use framework to define, train, and evaluate neural networks.
 
-Newly acquired skills:
- - TBD
+Features
+Support for customizable network architectures.
+Configurable activation functions (e.g., sigmoid, ReLU, softmax).
+Adjustable hyperparameters such as learning rate, batch size, and epochs.
+Evaluation metrics for performance tracking.
+Compatible with custom datasets.
+Installation
+Prerequisites
+Ensure you have Python 3.8 or later installed on your system. Additionally, install the required libraries:
+
+bash
+Copier le code
+pip install -r requirements.txt
+Clone the Repository
+bash
+Copier le code
+git clone https://github.com/your_username/Multilayer_perceptron.git
+cd Multilayer_perceptron
+Usage
+Defining the Network
+You can customize your MLP by defining its layers and hyperparameters in the script:
+
+python
+Copier le code
+from multilayer_perceptron import model, layers
+
+network = model.createNetwork([
+    layers.DenseLayer(input_shape, activation='sigmoid'),
+    layers.DenseLayer(24, activation='sigmoid'),
+    layers.DenseLayer(output_shape, activation='softmax')
+])
+Training the Model
+Train the MLP using your dataset:
+
+python
+Copier le code
+model.fit(network, data_train, data_valid, 
+          loss='binaryCrossentropy', 
+          learning_rate=0.0314, 
+          batch_size=8, 
+          epochs=84)
+Evaluating the Model
+After training, evaluate the model's performance:
+
+python
+Copier le code
+accuracy = model.evaluate(data_test)
+print(f"Test Accuracy: {accuracy:.2f}")
+Examples
+1. Binary Classification
+For binary classification tasks, use binaryCrossentropy as the loss function and a sigmoid activation in the output layer.
+
+2. Multi-Class Classification
+For multi-class problems, use categoricalCrossentropy as the loss function and a softmax activation in the output layer.
+
+Project Structure
+bash
+Copier le code
+Multilayer_perceptron/
+│
+├── multilayer_perceptron/
+│   ├── __init__.py            # Initialization file
+│   ├── layers.py              # Layer definitions
+│   ├── model.py               # Core model functions
+│   └── utils.py               # Utility functions
+│
+├── data/
+│   └── example_dataset.csv    # Example dataset
+│
+├── tests/
+│   ├── test_model.py          # Unit tests for model
+│   └── test_layers.py         # Unit tests for layers
+│
+├── requirements.txt           # Python dependencies
+├── LICENSE                    # License file
+└── README.md                  # Documentation
+Contributing
+Contributions are welcome! Please follow these steps:
+
+Fork the repository.
+Create a new branch (git checkout -b feature/new_feature).
+Commit your changes (git commit -m 'Add new feature').
+Push the branch (git push origin feature/new_feature).
+Create a pull request.
+License
+This project is licensed under the MIT License.
+
+Acknowledgments
+Inspiration from classical neural network frameworks.
+Special thanks to the Python and open-source communities.

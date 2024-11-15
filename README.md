@@ -19,7 +19,6 @@ pip install -r requirements.txt
 ### Clone the Repository
 
 git clone git@github.com:TMdoubleGit/multilayer_perceptron.git
-
 cd Multilayer_perceptron
 
 ## Usage

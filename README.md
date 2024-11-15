@@ -54,38 +54,14 @@ For binary classification tasks, use binaryCrossentropy as the loss function and
 2. Multi-Class Classification
 For multi-class problems, use categoricalCrossentropy as the loss function and a softmax activation in the output layer.
 
-## Project Structure
-Multilayer_perceptron/
-│
-├── multilayer_perceptron/
-│   ├── __init__.py            # Initialization file
-│   ├── layers.py              # Layer definitions
-│   ├── model.py               # Core model functions
-│   └── utils.py               # Utility functions
-│
-├── data/
-│   └── example_dataset.csv    # Example dataset
-│
-├── tests/
-│   ├── test_model.py          # Unit tests for model
-│   └── test_layers.py         # Unit tests for layers
-│
-├── requirements.txt           # Python dependencies
-├── LICENSE                    # License file
-└── README.md                  # Documentation
-
 ## Contributing
 Contributions are welcome! Please follow these steps:
 
-Fork the repository.
-
-Create a new branch (git checkout -b feature/new_feature)
-
-Commit your changes (git commit -m 'Add new feature')
-
-Push the branch (git push origin feature/new_feature)
-
-Create a pull request
+- Fork the repository
+- Create a new branch (git checkout -b feature/new_feature)
+- Commit your changes (git commit -m 'Add new feature')
+- Push the branch (git push origin feature/new_feature)
+- Create a pull request
 
 ## License
 This project is licensed under the MIT License.

@@ -26,8 +26,6 @@ Usage
 Defining the Network
 You can customize your MLP by defining its layers and hyperparameters in the script:
 
-python
-Copier le code
 from multilayer_perceptron import model, layers
 
 network = model.createNetwork([
@@ -35,21 +33,19 @@ network = model.createNetwork([
     layers.DenseLayer(24, activation='sigmoid'),
     layers.DenseLayer(output_shape, activation='softmax')
 ])
+
 Training the Model
 Train the MLP using your dataset:
 
-python
-Copier le code
 model.fit(network, data_train, data_valid, 
           loss='binaryCrossentropy', 
           learning_rate=0.0314, 
           batch_size=8, 
           epochs=84)
+
 Evaluating the Model
 After training, evaluate the model's performance:
 
-python
-Copier le code
 accuracy = model.evaluate(data_test)
 print(f"Test Accuracy: {accuracy:.2f}")
 Examples
@@ -60,8 +56,6 @@ For binary classification tasks, use binaryCrossentropy as the loss function and
 For multi-class problems, use categoricalCrossentropy as the loss function and a softmax activation in the output layer.
 
 Project Structure
-bash
-Copier le code
 Multilayer_perceptron/
 │
 ├── multilayer_perceptron/
@@ -88,9 +82,6 @@ Create a new branch (git checkout -b feature/new_feature).
 Commit your changes (git commit -m 'Add new feature').
 Push the branch (git push origin feature/new_feature).
 Create a pull request.
+
 License
 This project is licensed under the MIT License.
-
-Acknowledgments
-Inspiration from classical neural network frameworks.
-Special thanks to the Python and open-source communities.

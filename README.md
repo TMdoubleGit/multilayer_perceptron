@@ -18,7 +18,7 @@ Ensure you have Python 3.8 or later installed on your system. Additionally, inst
 pip install -r requirements.txt
 ### Clone the Repository
 
-git clone https://github.com/your_username/Multilayer_perceptron.git
+git clone git@github.com:TMdoubleGit/multilayer_perceptron.git
 cd Multilayer_perceptron
 
 ## Usage

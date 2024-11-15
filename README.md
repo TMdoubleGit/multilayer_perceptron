@@ -4,26 +4,25 @@
 
 A Python implementation of a Multilayer Perceptron (MLP) for solving classification and regression problems. This project provides a flexible and easy-to-use framework to define, train, and evaluate neural networks.
 
-Features
+## Features
 Support for customizable network architectures.
 Configurable activation functions (e.g., sigmoid, ReLU, softmax).
 Adjustable hyperparameters such as learning rate, batch size, and epochs.
 Evaluation metrics for performance tracking.
 Compatible with custom datasets.
-Installation
-Prerequisites
+
+## Installation
+### Prerequisites
 Ensure you have Python 3.8 or later installed on your system. Additionally, install the required libraries:
 
-bash
-Copier le code
 pip install -r requirements.txt
-Clone the Repository
-bash
-Copier le code
+### Clone the Repository
+
 git clone https://github.com/your_username/Multilayer_perceptron.git
 cd Multilayer_perceptron
-Usage
-Defining the Network
+
+## Usage
+### Defining the Network
 You can customize your MLP by defining its layers and hyperparameters in the script:
 
 from multilayer_perceptron import model, layers
@@ -34,7 +33,7 @@ network = model.createNetwork([
     layers.DenseLayer(output_shape, activation='softmax')
 ])
 
-Training the Model
+### Training the Model
 Train the MLP using your dataset:
 
 model.fit(network, data_train, data_valid, 
@@ -43,19 +42,19 @@ model.fit(network, data_train, data_valid,
           batch_size=8, 
           epochs=84)
 
-Evaluating the Model
+### Evaluating the Model
 After training, evaluate the model's performance:
 
 accuracy = model.evaluate(data_test)
 print(f"Test Accuracy: {accuracy:.2f}")
-Examples
+### Examples
 1. Binary Classification
 For binary classification tasks, use binaryCrossentropy as the loss function and a sigmoid activation in the output layer.
 
 2. Multi-Class Classification
 For multi-class problems, use categoricalCrossentropy as the loss function and a softmax activation in the output layer.
 
-Project Structure
+## Project Structure
 Multilayer_perceptron/
 │
 ├── multilayer_perceptron/
@@ -74,7 +73,8 @@ Multilayer_perceptron/
 ├── requirements.txt           # Python dependencies
 ├── LICENSE                    # License file
 └── README.md                  # Documentation
-Contributing
+
+## Contributing
 Contributions are welcome! Please follow these steps:
 
 Fork the repository.
@@ -83,5 +83,5 @@ Commit your changes (git commit -m 'Add new feature').
 Push the branch (git push origin feature/new_feature).
 Create a pull request.
 
-License
+## License
 This project is licensed under the MIT License.

@@ -13,9 +13,8 @@ Compatible with custom datasets.
 
 ## Installation
 ### Prerequisites
-Ensure you have Python 3.8 or later installed on your system. Additionally, install the required libraries:
+Ensure you have Python 3.8 or later installed on your system.
 
-pip install -r requirements.txt
 ### Clone the Repository
 
 - git clone git@github.com:TMdoubleGit/multilayer_perceptron.git

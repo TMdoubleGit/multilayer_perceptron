@@ -78,10 +78,14 @@ Multilayer_perceptron/
 Contributions are welcome! Please follow these steps:
 
 Fork the repository.
-Create a new branch (git checkout -b feature/new_feature).
-Commit your changes (git commit -m 'Add new feature').
-Push the branch (git push origin feature/new_feature).
-Create a pull request.
+
+Create a new branch (git checkout -b feature/new_feature)
+
+Commit your changes (git commit -m 'Add new feature')
+
+Push the branch (git push origin feature/new_feature)
+
+Create a pull request
 
 ## License
 This project is licensed under the MIT License.

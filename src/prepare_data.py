@@ -7,17 +7,21 @@ def prepare_data():
     Prepares data for a multilayer perceptron model and saves it in .npz format.
 
     Steps:
-        1. Load the data from the specified CSV file.
-        2. Check and handle missing values by dropping rows with NaNs.
-        3. Drop the 'id' column (if it exists) as it is not a useful feature.
-        4. Encode the 'diagnosis' column using Label Encoding to convert it into numerical values.
-        5. Separate features (X) and target labels (y).
-        6. Normalize the features using StandardScaler for better performance in neural networks.
-        7. Split the dataset into training and testing sets with an 80-20 ratio.
-        8. Save the prepared data (X_train, X_test, y_train, y_test) in .npz format.
+        1. Load the dataset from the CSV file located at './datasets/data.csv'.
+        2. Check for missing values and drop rows containing NaNs.
+        3. Rename columns to include 'id', 'diagnosis', and feature names ('feature0', 'feature1', etc.).
+        4. Drop the 'id' column if it exists, as it is not a useful feature.
+        5. Encode the 'diagnosis' column manually using one-hot encoding:
+           - 'B' is encoded as [1, 0]
+           - 'M' is encoded as [0, 1]
+        6. Separate the features (X) and target labels (y).
+        7. Normalize the features (X) by subtracting the mean and dividing by the standard deviation for each feature.
+        8. Combine the features and labels into a single dataset and shuffle it using a fixed random seed for reproducibility.
+        9. Split the shuffled dataset into 80% training data and 20% testing data.
+        10. Save the prepared data (X_train, X_test, y_train, y_test) into a .npz file at './datasets/data.npz'.
 
     Returns:
-        None: The function saves the processed data to the specified .npz file and prints a success message.
+        None: The function saves the processed data into the specified .npz file and prints a success message.
     """
 
     dataset = pd.read_csv("./datasets/data.csv")

@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pandas
+import pandas as pd
 from sklearn.model_selection import train_test_split
 
 def prepare_data():
@@ -20,10 +20,10 @@ def prepare_data():
         None: The function saves the processed data to the specified .npz file and prints a success message.
     """
 
-    dataset = pd.read_csv("/datasets/data.csv")
+    dataset = pd.read_csv("./datasets/data.csv")
 
-    if data.isnull().sum().any():
-        data = data.dropna()
+    if dataset.isnull().sum().any():
+        dataset = dataset.dropna()
 
     columns = ['id', 'diagnosis'] + [f'feature{i}' for i in range(len(dataset.columns) - 2)]
     dataset.columns = columns
@@ -32,13 +32,13 @@ def prepare_data():
     if 'id' in dataset.columns:
         dataset = dataset.drop(columns=['id'])
     
-    if 'diagnosis' in data.columns:
-        data['diagnosis'] = data['diagnosis'].apply(
+    if 'diagnosis' in dataset.columns:
+        dataset['diagnosis'] = dataset['diagnosis'].apply(
             lambda x: [1, 0] if x == 'B' else [0, 1]
         )
 
-    X = data.drop(columns=['diagnosis']).values
-    y = np.array(data['diagnosis'].tolist())
+    X = dataset.drop(columns=['diagnosis']).values
+    y = np.array(dataset['diagnosis'].tolist())
 
     mean = X.mean(axis=0)
     std = X.std(axis=0)
@@ -54,3 +54,14 @@ def prepare_data():
 
     X_train, y_train = train_data[:, :-y.shape[1]], train_data[:, -y.shape[1]:]
     X_test, y_test = test_data[:, :-y.shape[1]], test_data[:, -y.shape[1]:]
+
+    np.savez("./datasets/data.npz", 
+             X_train=X_train, 
+             X_test=X_test, 
+             y_train=y_train, 
+             y_test=y_test)
+
+    print(f"Data prepared and saved to './datasets/data.npz'.")
+
+if __name__ == "__main__":
+    prepare_data()

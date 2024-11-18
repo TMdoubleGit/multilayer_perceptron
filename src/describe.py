@@ -2,11 +2,23 @@ import pandas as pd
 import math
 import sys
 
-def describe():
-    """
-    This function loads a CSV file, renames the columns,
-    and displays statistics for numerical feature columns.
-    """
+def describe() -> None:
+ """
+    Analyzes numerical features in a dataset and displays descriptive statistics.
+
+    This function loads a dataset from a CSV file, renames its columns for clarity,
+    and computes descriptive statistics for numerical feature columns. The results
+    are displayed in a tabular format, including metrics such as mean, standard
+    deviation, percentiles, skewness, and kurtosis.
+
+    Raises:
+        Exception: If the dataset cannot be loaded or analyzed, the error is caught
+        and displayed.
+
+    Returns:
+        None: The function prints the formatted statistics directly.
+
+"""
     try:
         dataset = pd.read_csv("./datasets/data.csv", index_col=0)
         columns = ['id', 'diagnosis'] + [f'feature{i}' for i in range(len(dataset.columns) - 2)]

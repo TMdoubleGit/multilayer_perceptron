@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def prepare_data():
+def prepare_data() -> None:
     """
     Prepares data for a multilayer perceptron model and saves it in .npz format.
 
@@ -37,7 +37,7 @@ def prepare_data():
     
     if 'diagnosis' in dataset.columns:
         dataset['diagnosis'] = dataset['diagnosis'].apply(
-            lambda x: [1, 0] if x == 'B' else [0, 1]
+            lambda x: 0 if x == 'B' else 1
         )
 
     X = dataset.drop(columns=['diagnosis']).values

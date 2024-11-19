@@ -137,4 +137,3 @@ class mlp:
 
             if self.verbose and epoch % 100 == 0:
                 print(f"Epoch {epoch}/{epochs}: Loss = {total_loss:.2f}")
-

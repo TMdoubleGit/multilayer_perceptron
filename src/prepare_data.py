@@ -11,8 +11,8 @@ def prepare_data() -> None:
         3. Rename columns to include 'id', 'diagnosis', and feature names ('feature0', 'feature1', etc.).
         4. Drop the 'id' column if it exists, as it is not a useful feature.
         5. Encode the 'diagnosis' column manually using one-hot encoding:
-           - 'B' is encoded as [1, 0]
-           - 'M' is encoded as [0, 1]
+           - 'B' is encoded as 1
+           - 'M' is encoded as 0
         6. Separate the features (X) and target labels (y).
         7. Normalize the features (X) by subtracting the mean and dividing by the standard deviation for each feature.
         8. Combine the features and labels into a single dataset and shuffle it using a fixed random seed for reproducibility.

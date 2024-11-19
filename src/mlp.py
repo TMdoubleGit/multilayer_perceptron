@@ -37,6 +37,10 @@ class mlp:
         return 1 /(1 + np.exp(-z))
 
 
+    def sigmoid_derivative(z):
+        return z * (1 - z)
+
+
     def loss(self, yPred: np.ndarray, yTrue: np.ndarray, size: int) -> float:
         cross_entropy_loss = np.mean(-np.log(yPred[np.arange(size), yTrue]))
         reg_loss = 0.5 * self.regularization_rate * sum(
@@ -92,7 +96,7 @@ class mlp:
             gradients.append((dW, dB))
 
             if i > 0:
-                error = np.dot(error, self.weights[i].T) * (self.layer_outputs[i - 1] * (1 - self.layer_outputs[i - 1]))
+                error = np.dot(error, self.weights[i].T) * (self.sigmoid_derivative(layer_outputs[i - 1]))
 
          for i in range(len(self.weights)):
             dW, dB = gradients[-(i + 1)]
@@ -137,3 +141,4 @@ class mlp:
 
             if self.verbose and epoch % 100 == 0:
                 print(f"Epoch {epoch}/{epochs}: Loss = {total_loss:.2f}")
+

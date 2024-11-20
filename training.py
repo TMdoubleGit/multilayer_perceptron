@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 import os
+import argparse
 from src.mlp import mlp
 
 def load_data(data_path):
@@ -20,28 +21,46 @@ def load_data(data_path):
     y_valid = data['y_test']
     return X_train, y_train, X_valid, y_valid
 
-def initialize_model():
-    """
-    Initialize the MLP model with specified parameters.
 
-    Returns:
-        model: An instance of the mlp class.
-    """
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Train an MLP model.')
+    parser.add_argument('--layers', type=int, nargs='+', default=[10, 10],
+                        help='List of units in each hidden layer.')
+    parser.add_argument('--epochs', type=int, default=10000, help='Number of training epochs.')
+    parser.add_argument('--loss', type=str, default='binaryCrossentropy', help='Loss function.')
+    parser.add_argument('--batch_size', type=int, default=50, help='Size of each mini-batch.')
+    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate.')
+    parser.add_argument('--activation', type=str, default='sigmoid', help='Activation function.')
+    parser.add_argument('--weights_initializer', type=str, default='heUniform', help='Weights initializer.')
+    parser.add_argument('--patience', type=int, default=50, help='Patience for early stopping.')
+    return parser.parse_args()
+
+
+def initialize_model(args, input_units):
+    layers_config = []
+    output_units = 2
+
+    layers_config.append({'units': input_units, 'activation': args.activation})
+
+    for units in args.layers:
+        layers_config.append({'units': units, 'activation': args.activation})
+
+    layers_config.append({'units': output_units, 'activation': 'softmax'})
+
     model = mlp(
         seed=42,
-        layers_config=[
-            {'units': 10, 'activation': 'sigmoid'},
-            {'units': 10, 'activation': 'sigmoid'},
-            {'units': 2, 'activation': 'softmax'}
-        ],
-        epochs=10000,
-        learning_rate=0.001,
+        layers_config=layers_config,
+        epochs=args.epochs,
+        learning_rate=args.learning_rate,
         regularization_rate=0.001,
-        verbose=True
+        verbose=True,
+        weights_initializer=args.weights_initializer
     )
     return model
 
-def train_model(model, X_train, y_train, X_valid, y_valid):
+
+
+def train_model(model, X_train, y_train, X_valid, y_valid, args):
     """
     Train the MLP model using the provided training data.
 
@@ -55,8 +74,17 @@ def train_model(model, X_train, y_train, X_valid, y_valid):
     Returns:
         model: The trained model.
     """
-    model.train(X_train, y_train, X_valid, y_valid)
+    model.train(
+        X_train,
+        y_train,
+        X_valid,
+        y_valid,
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        patience=args.patience
+    )
     return model
+
 
 def save_model(model, filepath):
     """
@@ -73,13 +101,16 @@ def save_model(model, filepath):
         pickle.dump(model, f)
     print(f"Model saved to '{filepath}'.")
 
+
 def main():
+    args = parse_arguments()
+
     data_path = './datasets/data.npz'
     X_train, y_train, X_valid, y_valid = load_data(data_path)
 
-    model = initialize_model()
+    model = initialize_model(args, input_units = X_train.shape[1])
 
-    model = train_model(model, X_train, y_train, X_valid, y_valid)
+    model = train_model(model, X_train, y_train, X_valid, y_valid, args)
 
     model_path = './models/trained_model.pkl'
     os.makedirs(os.path.dirname(model_path), exist_ok=True)

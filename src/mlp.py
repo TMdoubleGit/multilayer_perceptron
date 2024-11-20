@@ -2,17 +2,20 @@ import numpy as np
 from typing import List
 
 class mlp:
-    def __init__(self, seed = False, layers_config: List[dict] = None, epochs = 50, learning_rate = 0.001, regularization_rate = 0.001, verbose = True) -> None:
+    def __init__(self, seed = False, layers_config: List[dict] = None, epochs = 10000,
+            learning_rate = 0.001, regularization_rate = 0.001, verbose = True,
+            weights_initializer='heUniform') -> None:
         self.seed = seed
         self.layers_config = layers_config if layers_config else [
-            {'units': 24, 'activation': 'relu'},
-            {'units': 24, 'activation': 'relu'},
+            {'units': 10, 'activation': 'sigmoid'},
+            {'units': 10, 'activation': 'sigmoid'},
             {'units': 2, 'activation': 'softmax'}
         ]
         self.epochs = epochs
         self.learning_rate = learning_rate
         self.regularization_rate = regularization_rate
         self.verbose = verbose
+        self.weights_initializer = weights_initializer
 
         self.weights = None
         self.biases = None
@@ -23,25 +26,44 @@ class mlp:
 
     def initialize(self, input_size: int) -> None:
         """
-        Initialize weights and biases for each layer.
-        Weights are initialized using He initialization: N(0, sqrt(2 / size)).
-        Biases are initialized to 0.
+        Initialize weights and biases for each layer using the specified weights initializer.
+        Supports 'heUniform', 'xavierUniform', and default normal initialization.
+        Biases are initialized to zeros.
         """
         if not isinstance(input_size, int) or input_size <= 0:
             raise ValueError("input_size must be a positive integer")
         if self.seed:
             np.random.seed(self.seed)
 
-        layer_sizes = [input_size] + [layer['units'] for layer in self.layers_config]
-            
-        self.weights = [
-            np.random.randn(layer_sizes[i], layer_sizes[i + 1]) * np.sqrt(2. / layer_sizes[i])
-            for i in range(len(layer_sizes) - 1)
-        ]
-        self.biases = [
-            np.zeros((1, layer_sizes[i +1]))
-            for i in range(len(layer_sizes) -1)
-        ]
+        self.weights = []
+        self.biases = []
+        layer_input_size = input_size
+
+        for i, layer in enumerate(self.layers_config):
+            units = layer['units']
+            activation = layer.get('activation', 'relu')
+
+            if self.weights_initializer == 'heUniform':
+                limit = np.sqrt(6 / layer_input_size)
+                W = np.random.uniform(-limit, limit, (layer_input_size, units))
+            elif self.weights_initializer == 'xavierUniform':
+                limit = np.sqrt(6 / (layer_input_size + units))
+                W = np.random.uniform(-limit, limit, (layer_input_size, units))
+            elif self.weights_initializer == 'heNormal':
+                std_dev = np.sqrt(2. / layer_input_size)
+                W = np.random.randn(layer_input_size, units) * std_dev
+            elif self.weights_initializer == 'xavierNormal':
+                std_dev = np.sqrt(2. / (layer_input_size + units))
+                W = np.random.randn(layer_input_size, units) * std_dev
+            else:
+                W = np.random.randn(layer_input_size, units) * 0.01
+
+            b = np.zeros((1, units))
+
+            self.weights.append(W)
+            self.biases.append(b)
+
+            layer_input_size = units
 
 
     def sigmoid(self, z):
@@ -58,6 +80,14 @@ class mlp:
 
     def relu_derivative(self, z):
         return (z > 0).astype(float)
+
+
+    def tanh(self, z):
+        return np.tanh(z)
+
+
+    def tanh_derivative(self, a):
+        return 1 - np.power(a, 2)
 
 
     def softmax(self, z):
@@ -111,6 +141,8 @@ class mlp:
                 a = self.relu(z)
             elif activation == 'sigmoid':
                 a = self.sigmoid(z)
+            elif activation == 'tanh':
+                a = self.tanh(z)
             elif activation == 'softmax':
                 a = self.softmax(z)
             else:
@@ -164,6 +196,9 @@ class mlp:
                 elif activation_prev == 'sigmoid':
                     a_prev = prev_layer_cache['a']
                     delta = np.dot(delta, self.weights[i].T) * self.sigmoid_derivative(a_prev)
+                elif activation_prev == 'tanh':
+                    a_prev = prev_layer_cache['a']
+                    delta = np.dot(delta, self.weights[i+1].T) * self.tanh_derivative(a_prev)
                 else:
                     raise ValueError(f"Unsupported activation function: {activation_prev}")
 

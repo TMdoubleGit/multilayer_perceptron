@@ -2,7 +2,7 @@ import numpy as np
 from typing import List
 
 class mlp:
-    def __init__(self, seed = False, layers_config: List[dict] = None, epochs: 50, learning_rate = 0.001, regularization_rate = 0.001, verbose = True) -> None:
+    def __init__(self, seed = False, layers_config: List[dict] = None, epochs = 50, learning_rate = 0.001, regularization_rate = 0.001, verbose = True) -> None:
         self.seed = seed
         self.layers_config = layers_config if layers_config else [
             {'units': 24, 'activation': 'relu'},
@@ -39,8 +39,8 @@ class mlp:
             for i in range(len(layer_sizes) - 1)
         ]
         self.biases = [
-            np.zeros((1, layer_sizes[i + 1]))
-            for i in range(len(layer_sizes) - 1)
+            np.zeros((1, layer_sizes[i +1]))
+            for i in range(len(layer_sizes) -1)
         ]
 
 
@@ -135,6 +135,7 @@ class mlp:
         grads_W = [None] * len(self.weights)
         grads_b = [None] * len(self.biases)
 
+        y = y.astype(int)  # Ensure y is integer type
         y_one_hot = np.zeros_like(yPred)
         y_one_hot[np.arange(m), y] = 1
 
@@ -142,7 +143,17 @@ class mlp:
 
         for i in reversed(range(len(self.weights))):
             layer_cache = self.layer_outputs[i]
-            z = layer_cache['z'20.99
+            z = layer_cache['z']
+            a = layer_cache['a']
+            activation = layer_cache['activation']
+            a_prev = self.layer_outputs[i - 1]['a'] if i > 0 else X
+
+            dW = np.dot(a_prev.T, delta) / m + (self.regularization_rate * self.weights[i] / m)
+            dB = np.sum(delta, axis=0, keepdims=True) / m
+
+            grads_W[i] = dW
+            grads_b[i] = dB
+
             if i > 0:
                 prev_layer_cache = self.layer_outputs[i - 1]
                 z_prev = prev_layer_cache['z']
@@ -161,10 +172,9 @@ class mlp:
             self.biases[i] -= self.learning_rate * grads_b[i]
 
 
-
     def train(self, X_train: np.ndarray, y_train: np.ndarray,
             X_valid: np.ndarray = None, y_valid: np.ndarray = None,
-            epochs: int = None, batch_size: int = 32, patience: int = 10) -> None:
+            epochs: int = None, batch_size: int = 50, patience: int = 50) -> None:
         """
         Train the neural network using mini-batch gradient descent.
 
@@ -219,11 +229,11 @@ class mlp:
                     best_loss = val_loss
                     no_improvement_count = 0
                 else:
-                    no_improvement_count += 1
+                    no_improvement_count += 1                              
 
-                if no_improvement_count >= patience:
-                    print(f"Early stopping triggered after {epoch} epochs. Best val_loss: {best_loss:.4f}")
-                    break
+                    if no_improvement_count >= patience:
+                        print(f"Early stopping triggered after {epoch} epochs. Best val_loss: {best_loss:.4f}")
+                        break
 
                 if self.verbose and epoch % 10 == 0:
                     print(f"Epoch {epoch}/{epochs}: Loss = {total_loss:.4f}, Val Loss = {val_loss:.4f}, Val Acc = {val_accuracy:.4f}")

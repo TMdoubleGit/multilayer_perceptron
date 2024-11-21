@@ -2,6 +2,7 @@ import numpy as np
 import pickle
 import os
 import argparse
+import matplotlib.pyplot as plt
 from src.mlp import mlp
 
 def load_data(data_path):
@@ -32,12 +33,12 @@ def parse_arguments():
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate.')
     parser.add_argument('--activation', type=str, default='sigmoid', help='Activation function.')
     parser.add_argument('--weights_initializer', type=str, default='heUniform', help='Weights initializer.')
-    parser.add_argument('--optimizer', type=str, default='None', help='Gradient descent optimizer')
+    parser.add_argument('--optimizers', type=str, nargs='+', default=['None', 'None'], help='List of optimizers to use during training')
     parser.add_argument('--patience', type=int, default=50, help='Patience for early stopping.')
     return parser.parse_args()
 
 
-def initialize_model(args, input_units):
+def initialize_model(args, input_units, optimizer):
     layers_config = []
     output_units = 2
 
@@ -56,7 +57,7 @@ def initialize_model(args, input_units):
         regularization_rate=0.001,
         verbose=True,
         weights_initializer=args.weights_initializer,
-        optimizer=args.optimizer
+        optimizer=optimizer
     )
     return model
 
@@ -104,6 +105,41 @@ def save_model(model, filepath):
     print(f"Model saved to '{filepath}'.")
 
 
+def plot_multiple_learning_curves(models_results: dict):
+    """
+    Plot learning curves for multiple models.
+
+    Args:
+        models_results (dict): Dictionary where keys are model names and values are dictionaries with:
+                            - 'train_loss': List of training loss values over epochs.
+                            - 'valid_loss': List of validation loss values over epochs.
+                            - 'train_acc': List of training accuracy values over epochs.
+                            - 'valid_acc': List of validation accuracy values over epochs.
+    """
+    plt.figure(figsize=(14, 6))
+
+    plt.subplot(1, 2, 1)
+    for model_name, results in models_results.items():
+        plt.plot(results['train_loss'], label=f'{model_name} Train Loss')
+        plt.plot(results['valid_loss'], label=f'{model_name} Validation Loss')
+    plt.title('Loss Over Epochs')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    for model_name, results in models_results.items():
+        plt.plot(results['train_acc'], label=f'{model_name} Train Accuracy')
+        plt.plot(results['valid_acc'], label=f'{model_name} Validation Accuracy')
+    plt.title('Accuracy Over Epochs')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+        
 def main():
     try:
         args = parse_arguments()
@@ -111,22 +147,51 @@ def main():
         data_path = './datasets/data.npz'
         X_train, y_train, X_valid, y_valid = load_data(data_path)
 
-        model = initialize_model(args, input_units = X_train.shape[1])
+        input_units = X_train.shape[1]
 
-        model = train_model(model, X_train, y_train, X_valid, y_valid, args)
+        models = {}
+        learning_curves = {}
 
-        model_path = './models/trained_model.pkl'
-        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        for optimizer in args.optimizers:
+            print(f"Training with optimizer: {optimizer}")
+            model = initialize_model(args, input_units, optimizer)
+            model_name = f"MLP_{optimizer}"
+            trained_model = train_model(model, X_train, y_train, X_valid, y_valid, args)
 
-        save_model(model, model_path)
+            model_path = f'./models/{model_name}.pkl'
+            os.makedirs(os.path.dirname(model_path), exist_ok=True)
+            save_model(trained_model, model_path)
 
-        metrics = model.evaluate_model(X_valid, y_valid)
-        print("Evaluation Metrics:")
-        for key, value in metrics.items():
-            if key == "confusion_matrix":
-                print(f"{key}:\n{value}")
-            else:
-                print(f"{key}: {value:.4f}")
+            models[model_name] = trained_model
+            learning_curves[model_name] = {
+                'loss': trained_model.loss_over_epoch,
+                'val_loss': trained_model.validation_loss_over_epoch
+            }
+
+            metrics = trained_model.evaluate_model(X_valid, y_valid)
+            print(f"Metrics for {model_name}:")
+            for key, value in metrics.items():
+                if key == "confusion_matrix":
+                    print(f"{key}:\n{value}")
+                else:
+                    print(f"{key}: {value:.4f}")   
+        plot_multiple_learning_curves(learning_curves)
+        # model = initialize_model(args, input_units = X_train.shape[1])
+
+        # model = train_model(model, X_train, y_train, X_valid, y_valid, args)
+
+        # model_path = './models/trained_model.pkl'
+        # os.makedirs(os.path.dirname(model_path), exist_ok=True)
+
+        # save_model(model, model_path)
+
+        # metrics = model.evaluate_model(X_valid, y_valid)
+        # print("Evaluation Metrics:")
+        # for key, value in metrics.items():
+        #     if key == "confusion_matrix":
+        #         print(f"{key}:\n{value}")
+        #     else:
+        #         print(f"{key}: {value:.4f}")
     except Exception as e:
         print(f"An error occurred: {e}")
 

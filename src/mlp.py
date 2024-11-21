@@ -326,7 +326,7 @@ class mlp:
                 if self.verbose and epoch % 100 == 0:
                     print(f"Epoch {epoch}/{epochs}: Loss = {total_loss:.4f}")
 
-        self.plot_learning_curves()
+        # self.plot_learning_curves()
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -451,14 +451,14 @@ class mlp:
 
     def evaluate_model(self, X: np.ndarray, y: np.ndarray):
         """
-        Evaluate the model with additional metrics: precision, recall, F1-score, and confusion matrix.
+        Evaluate the model with additional metrics: accuracy, precision and confusion matrix.
 
         Args:
             X (np.ndarray): Input data.
             y (np.ndarray): True labels.
 
         Returns:
-            dict: A dictionary containing accuracy, precision, recall, F1-score, and confusion matrix.
+            dict: A dictionary containing accuracy, precision and confusion matrix.
         """
         predictions = self.predict(X)
         accuracy = np.mean(predictions == y)

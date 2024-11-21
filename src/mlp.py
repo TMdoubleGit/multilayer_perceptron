@@ -1,10 +1,12 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from typing import List
+
 
 class mlp:
     def __init__(self, seed = False, layers_config: List[dict] = None, epochs = 10000,
             learning_rate = 0.001, regularization_rate = 0.001, verbose = True,
-            weights_initializer='heUniform') -> None:
+            weights_initializer='heUniform', optimizer='None') -> None:
         self.seed = seed
         self.layers_config = layers_config if layers_config else [
             {'units': 10, 'activation': 'sigmoid'},
@@ -16,12 +18,15 @@ class mlp:
         self.regularization_rate = regularization_rate
         self.verbose = verbose
         self.weights_initializer = weights_initializer
+        self.optimizer=optimizer
 
         self.weights = None
         self.biases = None
         self.layer_outputs = []
         self.loss_over_epoch = []
         self.validation_loss_over_epoch = []
+        self.accuracy_over_epoch = []
+        self.validation_accuracy_over_epoch = []
 
 
     def initialize(self, input_size: int) -> None:
@@ -64,6 +69,13 @@ class mlp:
             self.biases.append(b)
 
             layer_input_size = units
+
+        if self.optimizer == 'adam':
+            self.m, self.v = self.initialize_adam_cache()
+        elif self.optimizer == 'rmsprop':
+            self.caches = self.initialize_rmsprop_cache()
+        elif self.optimizer == 'nesterov':
+            self.velocities = self.initialize_nesterov_cache()
 
 
     def sigmoid(self, z):
@@ -156,18 +168,21 @@ class mlp:
 
     def backward_propagation(self, X: np.ndarray, y: np.ndarray, yPred: np.ndarray) -> None:
         """
-        Perform backward propagation to update weights and biases.
+        Perform backward propagation to compute gradients for weights and biases.
 
         Args:
             X (np.ndarray): Input data of shape (batch_size, num_features).
             y (np.ndarray): True labels of shape (batch_size, ).
             yPred (np.ndarray): Predicted output of shape (batch_size, num_classes).
+
+        Returns:
+            List[tuple]: Gradients for weights and biases as a list of tuples [(grad_w, grad_b), ...].
         """
         m = X.shape[0]
         grads_W = [None] * len(self.weights)
         grads_b = [None] * len(self.biases)
 
-        y = y.astype(int)  # Ensure y is integer type
+        y = y.astype(int)
         y_one_hot = np.zeros_like(yPred)
         y_one_hot[np.arange(m), y] = 1
 
@@ -201,10 +216,17 @@ class mlp:
                     delta = np.dot(delta, self.weights[i+1].T) * self.tanh_derivative(a_prev)
                 else:
                     raise ValueError(f"Unsupported activation function: {activation_prev}")
+    
+        gradients = [(grads_W[i], grads_b[i]) for i in range(len(self.weights))]
+        
+        return gradients
 
+
+    def gradient_descent(self, gradients, learning_rate) -> None:
         for i in range(len(self.weights)):
-            self.weights[i] -= self.learning_rate * grads_W[i]
-            self.biases[i] -= self.learning_rate * grads_b[i]
+            grad_w, grad_b = gradients[i]
+            self.weights[i] -= learning_rate * grad_w
+            self.biases[i] -= learning_rate * grad_b
 
 
     def train(self, X_train: np.ndarray, y_train: np.ndarray,
@@ -245,11 +267,23 @@ class mlp:
                 y_batch = y_train_shuffled[start:end]
                 
                 yPred_batch = self.forward_propagation(X_batch)
-                self.backward_propagation(X_batch, y_batch, yPred_batch)
+                gradients = self.backward_propagation(X_batch, y_batch, yPred_batch)
+
+                if self.optimizer == 'adam':
+                    self.adam(gradients, self.m, self.v, self.learning_rate, t=epoch)
+                elif self.optimizer == 'rmsprop':
+                    self.rmsprop(gradients, self.caches, self.learning_rate)
+                elif self.optimizer == 'nesterov':
+                    self.nesterov_momentum(gradients, self.velocities, self.learning_rate)
+                else:
+                    self.gradient_descent(gradients, self.learning_rate)
 
             yPred_train = self.forward_propagation(X_train)
             total_loss = self.loss(yPred_train, y_train)
             self.loss_over_epoch.append(total_loss)
+
+            train_accuracy = np.mean(self.predict(X_train) == y_train)
+            self.accuracy_over_epoch.append(train_accuracy)
 
             if X_valid is not None and y_valid is not None:
                 yPred_valid = self.forward_propagation(X_valid)
@@ -259,6 +293,7 @@ class mlp:
 
                 val_predictions = self.predict(X_valid)
                 val_accuracy = np.mean(val_predictions == y_valid)
+                self.validation_accuracy_over_epoch.append(val_accuracy)
 
                 if val_loss < best_loss:
                     best_loss = val_loss
@@ -286,6 +321,7 @@ class mlp:
                 if self.verbose and epoch % 100 == 0:
                     print(f"Epoch {epoch}/{epochs}: Loss = {total_loss:.4f}")
 
+        self.plot_learning_curves()
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -300,3 +336,110 @@ class mlp:
         probabilities = self.forward_propagation(X)
         predictions = np.argmax(probabilities, axis=1)
         return predictions
+
+
+    def nesterov_momentum(self, gradients, velocities, learning_rate, mu=0.9):
+        for i in range(len(self.weights)):
+            grad_w, grad_b = gradients[i]
+
+            velocities['weights'][i] = mu * velocities['weights'][i] - learning_rate * grad_w
+            velocities['biases'][i] = mu * velocities['biases'][i] - learning_rate * grad_b
+
+            self.weights[i] +=velocities['weights'][i]
+            self.biases[i] += velocities['biases'][i]
+
+    
+    def rmsprop(self, gradients, caches, learning_rate, beta=0.9, epsilon=1e-8):
+        for i in range(len(self.weights)):
+            grad_w, grad_b = gradients[i]
+
+            caches['weights'][i] = beta * caches['weights'][i] + (1 - beta) * (grad_w ** 2)
+            caches['biases'][i] = beta * caches['biases'][i] + (1 - beta) * (grad_b ** 2)
+
+            self.weights[i] -= learning_rate * grad_w / (np.sqrt(caches['weights'][i]) + epsilon)
+            self.biases[i] -= learning_rate * grad_b / (np.sqrt(caches['biases'][i]) + epsilon)
+
+
+    def adam(self, gradients, m, v, learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-8, t=1):
+        for i in range(len(self.weights)):
+            grad_w, grad_b = gradients[i]
+
+            m['weights'][i] = beta1 * m['weights'][i] + (1 - beta1) * grad_w
+            m['biases'][i] = beta1 * m['biases'][i] + (1 - beta1) * grad_b
+
+            v['weights'][i] = beta2 * v['weights'][i] + (1 - beta2) * (grad_w ** 2)
+            v['biases'][i] = beta2 * v['biases'][i] + (1 - beta2) * (grad_b ** 2)
+
+            m_hat_w = m['weights'][i] / (1 - beta1 ** t)
+            m_hat_b = m['biases'][i] / (1 - beta1 ** t)
+            v_hat_w = v['weights'][i] / (1 - beta2 ** t)
+            v_hat_b = v['biases'][i] / (1 - beta2 ** t)
+
+            self.weights[i] -= learning_rate * m_hat_w / (np.sqrt(v_hat_w) + epsilon)
+            self.biases[i] -= learning_rate * m_hat_b / (np.sqrt(v_hat_b) + epsilon)
+
+    def initialize_adam_cache(self):
+        """
+        Initializes Adam caches for weights and biases.
+        Returns two dictionaries (`m` and `v`) for the first and second moments.
+        """
+        m = {
+            'weights': [np.zeros_like(w) for w in self.weights],
+            'biases': [np.zeros_like(b) for b in self.biases]
+        }
+        v = {
+            'weights': [np.zeros_like(w) for w in self.weights],
+            'biases': [np.zeros_like(b) for b in self.biases]
+        }
+        return m, v
+
+    def initialize_rmsprop_cache(self):
+        """
+        Initializes RMSProp caches for weights and biases.
+        Returns a dictionary (`caches`) for squared gradients.
+        """
+        caches = {
+            'weights': [np.zeros_like(w) for w in self.weights],
+            'biases': [np.zeros_like(b) for b in self.biases]
+        }
+        return caches
+
+    def initialize_nesterov_cache(self):
+        """
+        Initializes velocities for weights and biases for Nesterov momentum.
+        Returns a dictionary (`velocities`) for velocities.
+        """
+        velocities = {
+            'weights': [np.zeros_like(w) for w in self.weights],
+            'biases': [np.zeros_like(b) for b in self.biases]
+        }
+        return velocities
+
+
+
+    def plot_learning_curves(self):
+        """
+        Plot learning curves for loss and accuracy.
+        """
+        plt.figure(figsize=(12, 6))
+
+        plt.subplot(1, 2, 1)
+        plt.plot(self.loss_over_epoch, label='Training Loss')
+        if self.validation_loss_over_epoch:
+            plt.plot(self.validation_loss_over_epoch, label='Validation Loss')
+        plt.title('Loss Over Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+
+        plt.subplot(1, 2, 2)
+        plt.plot(self.accuracy_over_epoch, label='Training Accuracy')
+        if self.validation_accuracy_over_epoch:
+            plt.plot(self.validation_accuracy_over_epoch, label='Validation Accuracy')
+        plt.title('Accuracy Over Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()

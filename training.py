@@ -32,6 +32,7 @@ def parse_arguments():
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate.')
     parser.add_argument('--activation', type=str, default='sigmoid', help='Activation function.')
     parser.add_argument('--weights_initializer', type=str, default='heUniform', help='Weights initializer.')
+    parser.add_argument('--optimizer', type=str, default='None', help='Gradient descent optimizer')
     parser.add_argument('--patience', type=int, default=50, help='Patience for early stopping.')
     return parser.parse_args()
 
@@ -54,7 +55,8 @@ def initialize_model(args, input_units):
         learning_rate=args.learning_rate,
         regularization_rate=0.001,
         verbose=True,
-        weights_initializer=args.weights_initializer
+        weights_initializer=args.weights_initializer,
+        optimizer=args.optimizer
     )
     return model
 

@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List
+from sklearn.metrics import precision_score, confusion_matrix
 
 
 class mlp:
@@ -420,7 +421,6 @@ class mlp:
         return velocities
 
 
-
     def plot_learning_curves(self):
         """
         Plot learning curves for loss and accuracy.
@@ -447,3 +447,26 @@ class mlp:
 
         plt.tight_layout()
         plt.show()
+
+
+    def evaluate_model(self, X: np.ndarray, y: np.ndarray):
+        """
+        Evaluate the model with additional metrics: precision, recall, F1-score, and confusion matrix.
+
+        Args:
+            X (np.ndarray): Input data.
+            y (np.ndarray): True labels.
+
+        Returns:
+            dict: A dictionary containing accuracy, precision, recall, F1-score, and confusion matrix.
+        """
+        predictions = self.predict(X)
+        accuracy = np.mean(predictions == y)
+        precision = precision_score(y, predictions, average='weighted')
+        conf_matrix = confusion_matrix(y, predictions)
+
+        return {
+            "accuracy": accuracy,
+            "precision": precision,
+            "confusion_matrix": conf_matrix
+        }

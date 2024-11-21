@@ -119,6 +119,14 @@ def main():
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
 
         save_model(model, model_path)
+
+        metrics = model.evaluate_model(X_valid, y_valid)
+        print("Evaluation Metrics:")
+        for key, value in metrics.items():
+            if key == "confusion_matrix":
+                print(f"{key}:\n{value}")
+            else:
+                print(f"{key}: {value:.4f}")
     except Exception as e:
         print(f"An error occurred: {e}")
 

@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
+import os
+import argparse
 
-def prepare_data() -> None:
+def prepare_data(datapath) -> None:
     """
     Prepares data for a multilayer perceptron model and saves it in .npz format.
 
@@ -22,49 +24,62 @@ def prepare_data() -> None:
     Returns:
         None: The function saves the processed data into the specified .npz file and prints a success message.
     """
-    dataset = pd.read_csv("./datasets/data.csv")
+    try:
+        if not datapath:
+            raise ValueError("A valid path must be provided.")
+        if not os.path.exists(datapath):
+            raise FileNotFoundError(f"The provided path does not exist: {datapath}")
+        dataset = pd.read_csv(datapath)
 
-    if dataset.isnull().sum().any():
-        dataset = dataset.dropna()
+        if dataset.isnull().sum().any():
+            dataset = dataset.dropna()
 
-    columns = ['id', 'diagnosis'] + [f'feature{i}' for i in range(len(dataset.columns) - 2)]
-    dataset.columns = columns
+        columns = ['id', 'diagnosis'] + [f'feature{i}' for i in range(len(dataset.columns) - 2)]
+        dataset.columns = columns
 
-    if 'id' in dataset.columns:
-        dataset = dataset.drop(columns=['id'])
+        if 'id' in dataset.columns:
+            dataset = dataset.drop(columns=['id'])
 
-    dataset['diagnosis'] = dataset['diagnosis'].apply(
-        lambda x: 1 if x == 'B' else 0
-    )
+        dataset['diagnosis'] = dataset['diagnosis'].apply(
+            lambda x: 1 if x == 'B' else 0
+        )
 
-    X = dataset.drop(columns=['diagnosis']).values
-    y = dataset['diagnosis'].values
+        X = dataset.drop(columns=['diagnosis']).values
+        y = dataset['diagnosis'].values
 
-    mean = X.mean(axis=0)
-    std = X.std(axis=0)
-    std[std == 0] = 1
-    X_scaled = (X - mean) / std
+        mean = X.mean(axis=0)
+        std = X.std(axis=0)
+        std[std == 0] = 1
+        X_scaled = (X - mean) / std
 
-    dataset_combined = np.hstack((X_scaled, y.reshape(-1, 1)))
-    np.random.seed(42)
-    np.random.shuffle(dataset_combined)
+        dataset_combined = np.hstack((X_scaled, y.reshape(-1, 1)))
+        np.random.seed(42)
+        np.random.shuffle(dataset_combined)
 
-    split_index = int(0.8 * len(dataset_combined))
-    train_data = dataset_combined[:split_index]
-    test_data = dataset_combined[split_index:]
+        split_index = int(0.8 * len(dataset_combined))
+        train_data = dataset_combined[:split_index]
+        test_data = dataset_combined[split_index:]
 
-    X_train, y_train = train_data[:, :-1], train_data[:, -1].astype(int)
-    X_test, y_test = test_data[:, :-1], test_data[:, -1].astype(int)
+        X_train, y_train = train_data[:, :-1], train_data[:, -1].astype(int)
+        X_test, y_test = test_data[:, :-1], test_data[:, -1].astype(int)
 
-    np.savez("./datasets/data.npz",
-             X_train=X_train,
-             X_test=X_test,
-             y_train=y_train,
-             y_test=y_test,
-             mean=mean,
-             std=std)
+        np.savez("./datasets/data.npz",
+                X_train=X_train,
+                X_test=X_test,
+                y_train=y_train,
+                y_test=y_test,
+                mean=mean,
+                std=std)
 
-    print(f"Data prepared and saved to './datasets/data.npz'.")
+        print(f"Data prepared and saved to './datasets/data.npz'.")
+    except Exception as e:
+        print(f"An error occured: {e}")
 
 if __name__ == "__main__":
-    prepare_data()
+    try:
+        parser = argparse.ArgumentParser(description="Prepare data for the MLP model.")
+        parser.add_argument("datapath", type=str, help="Path to the dataset CSV file.")
+        args = parser.parse_args()        
+        prepare_data(args.datapath)
+    except Exception as e:
+        print(f"An error occured: {e}")

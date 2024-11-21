@@ -105,19 +105,22 @@ def save_model(model, filepath):
 
 
 def main():
-    args = parse_arguments()
+    try:
+        args = parse_arguments()
 
-    data_path = './datasets/data.npz'
-    X_train, y_train, X_valid, y_valid = load_data(data_path)
+        data_path = './datasets/data.npz'
+        X_train, y_train, X_valid, y_valid = load_data(data_path)
 
-    model = initialize_model(args, input_units = X_train.shape[1])
+        model = initialize_model(args, input_units = X_train.shape[1])
 
-    model = train_model(model, X_train, y_train, X_valid, y_valid, args)
+        model = train_model(model, X_train, y_train, X_valid, y_valid, args)
 
-    model_path = './models/trained_model.pkl'
-    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        model_path = './models/trained_model.pkl'
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
 
-    save_model(model, model_path)
+        save_model(model, model_path)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()

@@ -60,8 +60,10 @@ class mlp:
             elif self.weights_initializer == 'xavierNormal':
                 std_dev = np.sqrt(2. / (layer_input_size + units))
                 W = np.random.randn(layer_input_size, units) * std_dev
-            else:
+            elif self.weights_initializer == 'None':
                 W = np.random.randn(layer_input_size, units) * 0.01
+            else:
+                raise ValueError (f"Unsupported weights_initializer: {self.weights_initializer}, choose between following values: heUniform, xavierUniform, heNormal, xavierNormal, None.")
 
             b = np.zeros((1, units))
 
@@ -158,7 +160,7 @@ class mlp:
             elif activation == 'softmax':
                 a = self.softmax(z)
             else:
-                raise ValueError(f"Unsupported activation function: {activation}")
+                raise ValueError(f"Unsupported activation function: {activation}, choose between following values: relu, sigmoid, tanh and softmax.")
 
             self.layer_outputs.append({'z': z, 'a': a, 'activation': activation})
             current_output = a
@@ -275,8 +277,10 @@ class mlp:
                     self.rmsprop(gradients, self.caches, self.learning_rate)
                 elif self.optimizer == 'nesterov':
                     self.nesterov_momentum(gradients, self.velocities, self.learning_rate)
-                else:
+                elif self.optimizer == 'None':
                     self.gradient_descent(gradients, self.learning_rate)
+                else:
+                    raise ValueError (f"Unsupported optimizer: {self.optimizer}, choose between following values: adam, nesterov, rmsprop, None.")
 
             yPred_train = self.forward_propagation(X_train)
             total_loss = self.loss(yPred_train, y_train)

@@ -7,7 +7,7 @@ from sklearn.metrics import precision_score, confusion_matrix
 class mlp:
     def __init__(self, seed = False, layers_config: List[dict] = None, epochs = 10000,
             learning_rate = 0.001, regularization_rate = 0.001, verbose = True,
-            weights_initializer='heUniform', optimizer='None') -> None:
+            weights_initializer='heUniform', optimizer=None) -> None:
         self.seed = seed
         self.layers_config = layers_config if layers_config else [
             {'units': 10, 'activation': 'sigmoid'},

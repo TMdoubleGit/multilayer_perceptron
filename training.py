@@ -33,7 +33,7 @@ def parse_arguments():
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate.')
     parser.add_argument('--activation', type=str, default='sigmoid', help='Activation function.')
     parser.add_argument('--weights_initializer', type=str, default='heUniform', help='Weights initializer.')
-    parser.add_argument('--optimizers', type=str, nargs='+', default=['None', 'None'], help='List of optimizers to use during training')
+    parser.add_argument('--optimizers', type=str, nargs='+', default=['None', 'nesterov', 'adam', 'rmsprop'], help='List of optimizers to use during training')
     parser.add_argument('--patience', type=int, default=50, help='Patience for early stopping.')
     return parser.parse_args()
 
@@ -120,8 +120,8 @@ def plot_multiple_learning_curves(models_results: dict):
 
     plt.subplot(1, 2, 1)
     for model_name, results in models_results.items():
-        plt.plot(results['train_loss'], label=f'{model_name} Train Loss')
-        plt.plot(results['valid_loss'], label=f'{model_name} Validation Loss')
+        plt.plot(results['loss'], label=f'{model_name} Train Loss')
+        plt.plot(results['val_loss'], label=f'{model_name} Validation Loss')
     plt.title('Loss Over Epochs')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
@@ -129,8 +129,8 @@ def plot_multiple_learning_curves(models_results: dict):
 
     plt.subplot(1, 2, 2)
     for model_name, results in models_results.items():
-        plt.plot(results['train_acc'], label=f'{model_name} Train Accuracy')
-        plt.plot(results['valid_acc'], label=f'{model_name} Validation Accuracy')
+        plt.plot(results['acc'], label=f'{model_name} Train Accuracy')
+        plt.plot(results['val_acc'], label=f'{model_name} Validation Accuracy')
     plt.title('Accuracy Over Epochs')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
@@ -155,7 +155,10 @@ def main():
         for optimizer in args.optimizers:
             print(f"Training with optimizer: {optimizer}")
             model = initialize_model(args, input_units, optimizer)
-            model_name = f"MLP_{optimizer}"
+            if ({optimizer} == 'None'):
+                model_name = "gradient_descent"
+            else:
+                model_name = f"{optimizer}"
             trained_model = train_model(model, X_train, y_train, X_valid, y_valid, args)
 
             model_path = f'./models/{model_name}.pkl'
@@ -165,7 +168,9 @@ def main():
             models[model_name] = trained_model
             learning_curves[model_name] = {
                 'loss': trained_model.loss_over_epoch,
-                'val_loss': trained_model.validation_loss_over_epoch
+                'val_loss': trained_model.validation_loss_over_epoch,
+                'acc':trained_model.accuracy_over_epoch,
+                'val_acc':trained_model.validation_accuracy_over_epoch
             }
 
             metrics = trained_model.evaluate_model(X_valid, y_valid)

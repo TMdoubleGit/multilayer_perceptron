@@ -2,6 +2,8 @@ import numpy as np
 import pickle
 from src.mlp import mlp
 import pandas as pd
+import fnmatch
+import argparse
 
 def load_model(model_path):
     """
@@ -83,12 +85,27 @@ def save_predictions(predictions, output_path):
 
 def main():
     try:
-        model_path = './models/trained_model.pkl'
+        parser = argparse.ArgumentParser(description="Compare predictions for the MLP model.")
+        parser.add_argument("modelpath", type=str, help="Path to the dataset PKL file.")
+        args = parser.parse_args()
+        
+        modelpath = args.modelpath   
+        datapath = './datasets/data.npz'
 
-        model = load_model(model_path)
+        model = load_model(modelpath)
 
-        data_path = './datasets/data.npz'
-        X_test, y_test = load_test_data(data_path)
+        if fnmatch.fnmatch(modelpath, "*adam*"):
+            modelname = 'adam'
+        elif fnmatch.fnmatch(modelpath, "*nesterov*"):
+            modelname = 'nesterov'
+        elif fnmatch.fnmatch(modelpath, "*None*"):
+            modelname = 'GD'
+        elif fnmatch.fnmatch(modelpath, "*rmsprop*"):
+            modelname = 'rmsprop'
+        else:
+            modelname = 'other_model'
+
+        X_test, y_test = load_test_data(datapath)
 
         predictions = make_predictions(model, X_test)
 
@@ -100,7 +117,7 @@ def main():
         print("True")
         print(y_test)
 
-        output_path = './predictions.csv'
+        output_path = f'./predictions_{modelname}.csv'
         save_predictions(predictions, output_path)
     except Exception as e:
         print(f"An error occurred: {e}")

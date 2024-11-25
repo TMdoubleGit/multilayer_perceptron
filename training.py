@@ -5,17 +5,17 @@ import argparse
 import matplotlib.pyplot as plt
 from src.mlp import mlp
 
-def load_data(data_path):
+def load_data(datapath):
     """
     Load data from the specified .npz file.
 
     Args:
-        data_path (str): Path to the .npz data file.
+        datapath (str): Path to the .npz data file.
 
     Returns:
         X_train, y_train, X_valid, y_valid: Arrays containing the training and validation data.
     """
-    data = np.load(data_path)
+    data = np.load(datapath)
     X_train = data['X_train']
     y_train = data['y_train']
     X_valid = data['X_test']
@@ -27,6 +27,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Train an MLP model.')
     parser.add_argument('--layers', type=int, nargs='+', default=[10, 10],
                         help='List of units in each hidden layer.')
+    parser.add_argument("datapath", type=str,
+                        help='Path to the .npz data file.')
     parser.add_argument('--epochs', type=int, default=10000, help='Number of training epochs.')
     parser.add_argument('--loss', type=str, default='binaryCrossentropy', help='Loss function.')
     parser.add_argument('--batch_size', type=int, default=50, help='Size of each mini-batch.')
@@ -144,8 +146,8 @@ def main():
     try:
         args = parse_arguments()
 
-        data_path = './datasets/data.npz'
-        X_train, y_train, X_valid, y_valid = load_data(data_path)
+        datapath = args.datapath
+        X_train, y_train, X_valid, y_valid = load_data(datapath)
 
         input_units = X_train.shape[1]
 
@@ -181,22 +183,6 @@ def main():
                 else:
                     print(f"{key}: {value:.4f}")   
         plot_multiple_learning_curves(learning_curves)
-        # model = initialize_model(args, input_units = X_train.shape[1])
-
-        # model = train_model(model, X_train, y_train, X_valid, y_valid, args)
-
-        # model_path = './models/trained_model.pkl'
-        # os.makedirs(os.path.dirname(model_path), exist_ok=True)
-
-        # save_model(model, model_path)
-
-        # metrics = model.evaluate_model(X_valid, y_valid)
-        # print("Evaluation Metrics:")
-        # for key, value in metrics.items():
-        #     if key == "confusion_matrix":
-        #         print(f"{key}:\n{value}")
-        #     else:
-        #         print(f"{key}: {value:.4f}")
     except Exception as e:
         print(f"An error occurred: {e}")
 

@@ -16,10 +16,10 @@ Compatible with custom datasets.
 Ensure you have Python 3.8 or later installed on your system.
 
 ### Clone the Repository
-    ```bash
-    git clone git@github.com:TMdoubleGit/multilayer_perceptron.git
-    cd multilayer_perceptron
-    ```
+```bash
+git clone git@github.com:TMdoubleGit/multilayer_perceptron.git
+cd multilayer_perceptron
+```
 
 ## Usage
 ### Defining the Network

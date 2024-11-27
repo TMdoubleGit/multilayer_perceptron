@@ -5,7 +5,7 @@
 A Python implementation of a Multilayer Perceptron (MLP) for solving classification and regression problems. This project provides a flexible and easy-to-use framework to define, train, and evaluate neural networks.
 
 ## Features
-Support for customizable network architectures.
+Support for customizable netwcd ..  ork architectures.
 Configurable activation functions (e.g., sigmoid, ReLU, softmax).
 Adjustable hyperparameters such as learning rate, batch size, and epochs.
 Evaluation metrics for performance tracking.
@@ -16,9 +16,10 @@ Compatible with custom datasets.
 Ensure you have Python 3.8 or later installed on your system.
 
 ### Clone the Repository
-
-- git clone git@github.com:TMdoubleGit/multilayer_perceptron.git
-- cd multilayer_perceptron
+    ```bash
+    git clone git@github.com:TMdoubleGit/multilayer_perceptron.git
+    cd multilayer_perceptron
+    ```
 
 ## Usage
 ### Defining the Network
